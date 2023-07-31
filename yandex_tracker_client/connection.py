@@ -41,6 +41,7 @@ class Connection(object):
                  api_version=VERSION_V2,
                  verify=True,
                  cloud_org_id=None,
+                 iam_token=None,
                  ):
 
         self.session = requests.Session()
@@ -58,6 +59,11 @@ class Connection(object):
                 raise exceptions.TrackerClientError("Use either org_id or cloud_org_id to specify organization")
             self.session.headers['X-Cloud-Org-Id'] = cloud_org_id
 
+        if iam_token and cloud_org_id:
+            if token and iam_token:
+                raise exceptions.TrackerClientError("Use OAuth or IAM temporary token")
+            self.session.headers['Authorization'] = 'Bearer ' + iam_token
+                     
         # Check validity headers for requests >= 2.11
         for header in self.session.headers.items():
             check_header_validity(header)
